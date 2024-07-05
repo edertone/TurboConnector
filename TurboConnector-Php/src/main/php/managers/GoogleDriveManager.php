@@ -15,8 +15,8 @@ namespace org\turboconnector\src\main\php\managers;
 
 use Throwable;
 use stdClass;
-use Google_Client;
-use Google_Service;
+use Google\Client;
+use Google\Service\Drive;
 use UnexpectedValueException;
 use org\turbocommons\src\main\php\utils\StringUtils;
 use org\turbodepot\src\main\php\managers\CacheManager;
@@ -30,14 +30,14 @@ class GoogleDriveManager {
 
     /**
      * Contains an instance of the google api client class
-     * @var Google_Client
+     * @var Client
      */
     private $_client = null;
 
 
     /**
      * Contains an instance of the google drive service
-     * @var Google_Service
+     * @var Drive
      */
     private $_service = null;
 
@@ -181,12 +181,12 @@ class GoogleDriveManager {
         // Check if authentication must be performed with service account credentials
         if($this->_serviceAccountCredentials !== ''){
 
-            $this->_client = new Google_Client();
+            $this->_client = new Client();
             $this->_client->setScopes(['https://www.googleapis.com/auth/drive']);
             $this->_client->setAuthConfig($this->_serviceAccountCredentials);
             $this->_client->useApplicationDefaultCredentials();
 
-            $this->_service = new Google_Service($this->_client);
+            $this->_service = new Drive($this->_client);
 
             $this->_isAuthenticated = true;
         }
