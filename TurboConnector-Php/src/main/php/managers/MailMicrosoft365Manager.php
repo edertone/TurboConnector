@@ -19,16 +19,43 @@ use GuzzleHttp\Exception\GuzzleException;
 
 
 /**
- * TODO docs
+ * MailMicrosoft365Manager class
  */
 class MailMicrosoft365Manager extends MailManagerBase{
 
 
+    /**
+     * @see setCredentialsClientId()
+     * @var string
+     */
     private $_clientId = '';
+
+
+    /**
+     * @see setCredentialsClientSecret()
+     * @var string
+     */
     private $_clientSecret = '';
+
+
+    /**
+     * @see setCredentialsTenantId()
+     * @var string
+     */
     private $_tenantId = '';
 
 
+    /**
+     * This class is an abstraction of the Microsoft Office 365 email service. It allows us to send emails through this service
+     * in an easy way, through the Microsoft Graph API.
+     *
+     * It requires the composer "guzzlehttp/guzzle" depedency
+     *
+     * @throws UnexpectedValueException
+     *
+     * @param string $vendorRoot A full file system path to the root of the composer vendor folder were the guzzlehttp/guzzle library is installed.
+     *               It must be accessible by our project and contain a valid autoload.php file
+     */
     public function __construct(string $vendorRoot){
 
         if(!is_file($vendorRoot.'/autoload.php')){
@@ -40,18 +67,36 @@ class MailMicrosoft365Manager extends MailManagerBase{
     }
 
 
+    /**
+     * Specify the string identifier for the Microsoft GRAPH api client ID credentials.
+     * This will be used to authorize the mail sending
+     *
+     * @param string $clientId A valid client ID string for the microsoft API
+     */
     public function setCredentialsClientId($clientId){
 
         $this->_clientId = $clientId;
     }
 
 
+    /**
+     * Specify the string identifier for the Microsoft GRAPH api client secret.
+     * This will be used to authorize the mail sending
+     *
+     * @param string $clientSecret A valid client secret string for the microsoft API
+     */
     public function setCredentialsClientSecret($clientSecret){
 
         $this->_clientSecret = $clientSecret;
     }
 
 
+    /**
+     * Specify the string identifier for the Microsoft GRAPH api tenant ID.
+     * This will be used to authorize the mail sending
+     *
+     * @param string $tenantId A valid tenant Id string for the microsoft API
+     */
     public function setCredentialsTenantId($tenantId){
 
         $this->_tenantId = $tenantId;
@@ -115,7 +160,5 @@ class MailMicrosoft365Manager extends MailManagerBase{
 
             throw new UnexpectedValueException($e->getMessage());
         }
-
-        return true;
     }
 }

@@ -211,6 +211,8 @@ abstract class MailManagerBase extends BaseStrictClass {
 
     /**
      * Execute the sending of an email with all the currently defined settings
+     *
+     * @return void
      */
     abstract public function send();
 }
