@@ -1,0 +1,74 @@
+{
+
+    "$schema": "https://raw.githubusercontent.com/edertone/TurboBuilder/master/TurboBuilder-Node/src/main/resources/json-schema/turbobuilder.schema.json",
+
+	"metadata": {
+		"name": "turboconnector-php",
+		"description": "General purpose library to facilitate connection to remote locations and external APIS",
+		"builderVersion": "8.0.0"		
+	},
+    "containers": {
+        "docker":[
+            {
+                "path": "php7-4_apache2-4_mariadb10-4-dev",
+                "startPolicy": "lazy"
+            }
+        ]
+    },
+	"validate": {
+	   "projectStructure" : {                    
+            "readmeFileMandatory": false
+        },
+        "filesContent" : {
+            "tabsForbidden": {
+                "enabled": true,
+                "affectedPaths": ["src", "extras"],
+                "excludes": [".svg", ".properties"]
+            },
+            "copyPasteDetect":[
+                {
+                    "path": "src/main",
+                    "maxPercentErrorLevel": 0,
+                    "maxPercentErrorDifference": 1,
+                    "report": "html"
+                }
+            ],
+            "copyrightHeaders": [
+                {
+                    "path": "extras/copyright headers/TurboConnector-Php.txt",
+                    "affectedPaths": ["src"],
+                    "includes": [".php"],
+                    "excludes": ["autoloader.php", "libs", "test/resources"]
+                }
+            ]
+        },
+        "php": {
+            "namespaces" : {
+                "enabled": true,
+                "mandatory": true,
+                "mustContain": ["org\\turboconnector\\src\\$path"],
+                "excludes": ["autoloader.php", "index.php"]
+            }
+        }
+    },
+    
+    "build": {
+	    "lib_php" : {
+	    }
+    },
+    
+    "release": {
+    },
+
+    "test": {
+        "enabledTests": [
+            {
+                "enabled": true,
+                "type": "phpUnit",
+                "testsRoot": "src/test",
+                "coverageReport": true,
+                "coverageReportOpenAfterTests": true
+            }
+        ]
+    }
+}

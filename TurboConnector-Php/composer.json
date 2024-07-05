@@ -1,0 +1,23 @@
+{
+	"name" : "turboconnector/turboconnector-php",
+	"description" : "General purpose library to facilitate connection to remote locations and external APIS",
+	"type" : "library",
+	"license" : "Apache-2.0",
+	"minimum-stability" : "stable",
+	"homepage" : "https://turboframework.org/en/libs/turboconnector",
+	"keywords" : [
+		"general",
+		"purpose",
+		"API",
+		"remote",
+		"connection"
+	],
+	"support" : {
+		"email" : "edertone.info@gmail.com",
+		"source" : "https://github.com/edertone/TurboConnector"
+	},
+    "require": {
+        "google/apiclient": "2.16.0",
+        "guzzlehttp/guzzle": "7.8.1"
+    }
+}
