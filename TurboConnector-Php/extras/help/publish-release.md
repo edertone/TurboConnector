@@ -11,7 +11,7 @@
 5 - Make sure the git tag is updated with the new project version we want to publish
     (First in remote GIT repo and then in our Local by performing a fetch)
 
-6 - Generate a release build executing tests (tb -crt)
+6 - Generate a release build (tb -cr)
      - Make sure the phar is generated
 
 7 - For now we are not publishing the library to composer, cause it requires the composer.json file to be on github root
