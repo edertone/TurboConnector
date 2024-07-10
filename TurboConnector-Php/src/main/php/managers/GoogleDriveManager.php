@@ -89,8 +89,8 @@ class GoogleDriveManager {
      *
      * How to use this class:
      *
-     * - Before creating an instance of GoogleDriveManager, the google-api-php-client library must be downloaded from github and deployed
-     *   into our project (We can use composer or download it directly).
+     * - Before creating an instance of GoogleDriveManager, the google-api-php-client library must be downloaded and deployed
+     *   into our project with composer.
      *
      * - We must login on the google api console and make sure we have a service account and a service account key.
      *   Service accounts are a special type of google user accounts that represent non human applications. The service account key is a file containing
