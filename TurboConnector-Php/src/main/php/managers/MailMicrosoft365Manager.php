@@ -51,6 +51,17 @@ class MailMicrosoft365Manager extends MailManagerBase{
      *
      * It requires the composer "guzzlehttp/guzzle" depedency
      *
+     * How to use this class:
+     *
+     * - Before creating an instance of MailMicrosoft365Manager, the guzzlehttp library must be downloaded and deployed
+     *   into our project with composer.
+     *
+     * - We must login on the microsoft portal and register an application to be able to access the microsoft 365 email features through the API.
+     *   We must create a clientId, a tenantId and a clientSecret.
+     *   We must then set the required permissions to that clientId so it can send emails. We must be sure that Mail.Send permission is enabled.
+     *
+     * - We can then access the feature with this class using the generated credentials
+     *
      * @throws UnexpectedValueException
      *
      * @param string $vendorRoot A full file system path to the root of the composer vendor folder were the guzzlehttp/guzzle library is installed.
