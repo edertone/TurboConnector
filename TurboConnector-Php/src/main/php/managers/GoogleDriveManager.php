@@ -182,7 +182,7 @@ class GoogleDriveManager {
         if($this->_serviceAccountCredentials !== ''){
 
             $this->_client = new Client();
-            $this->_client->setScopes(['https://www.googleapis.com/auth/drive']);
+            $this->_client->setScopes([Drive::DRIVE]);
             $this->_client->setAuthConfig($this->_serviceAccountCredentials);
             $this->_client->useApplicationDefaultCredentials();
 
@@ -227,7 +227,9 @@ class GoogleDriveManager {
     /**
      * Get a list with all the items under the specified google drive folder.
      *
-     * @param string $parentId The google drive identifier for the directory that contains the elements we want to list.
+     * @param string $parentId The google drive identifier for the directory that contains the elements we want to list. If the parent is empty
+     *        the root list will be retrieved. Notice that the root elements will be those that are SPECIFICALLY shared with this service account
+     *        at the google drive configuration.
      *
      * @return \stdClass[] An array with one object for each one of the child elements found. Each object will have three
      *         properties: id, with the id of the child element, isDirectory which will be true if the child element is a directory,
@@ -245,28 +247,46 @@ class GoogleDriveManager {
         // Authentication is performed here to improve response time when data is cached
         $this->authenticate();
 
-        // Request the list to the google drive API
-        $query = StringUtils::isEmpty($parentId) ? 'sharedWithMe=true' : "'".$parentId."' in parents";
-
-        $itemList = $this->_service->files->listFiles([
-            'q' => $query,
-            'pageSize' => 1000,
-            'fields' => 'nextPageToken, files(id,mimeType,name,parents)',
-            "orderBy" => "name"
-        ]);
-
         $result = [];
+        $pageToken = null;
 
-        foreach ($itemList->getFiles() as $item) {
+        do {
 
-            $itemStd = new stdClass();
-            $itemStd->id = $item->getId();
-            $itemStd->isDirectory = $item->getMimeType() === 'application/vnd.google-apps.folder';
-            $itemStd->name = $item->getName();
+            // Request the list to the google drive API
+            $query = StringUtils::isEmpty($parentId) ? 'sharedWithMe' : "'".$parentId."' in parents";
 
-            $result[] = $itemStd;
-        }
+            $parameters = [
+                'q' => $query,
+                'pageSize' => 1000,
+                'fields' => 'nextPageToken, files(id, name, mimeType, owners)',
+                'supportsAllDrives' => true,
+                'includeItemsFromAllDrives' => true,
+                "orderBy" => "name"
+            ];
 
+            if($pageToken){
+
+                $parameters['pageToken'] = $pageToken;
+            }
+
+            $itemList = $this->_service->files->listFiles($parameters);
+
+            // Fill the result array with the received elements
+            foreach ($itemList->getFiles() as $item){
+
+                $itemStd = new stdClass();
+                $itemStd->id = $item->getId();
+                $itemStd->isDirectory = $item->getMimeType() === 'application/vnd.google-apps.folder';
+                $itemStd->name = $item->getName();
+
+                $result[] = $itemStd;
+            }
+
+            $pageToken = $itemList->getNextPageToken();
+
+        } while ($pageToken != null);
+
+        // Save all the received list to cache
         if($this->_cacheManager !== null){
 
             $this->_cacheManager->save(__FUNCTION__, $parentId, json_encode($result));
