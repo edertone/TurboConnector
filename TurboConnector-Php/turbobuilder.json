@@ -10,7 +10,7 @@
     "containers": {
         "docker":[
             {
-                "path": "php7-4_apache2-4_mariadb10-4-dev",
+                "path": "php7-4_apache2-4-dev",
                 "startPolicy": "lazy"
             }
         ]
@@ -67,7 +67,8 @@
                 "type": "phpUnit",
                 "testsRoot": "src/test",
                 "coverageReport": true,
-                "coverageReportOpenAfterTests": true
+                "coverageReportOpenAfterTests": true,
+                "filter": ""
             }
         ]
     }

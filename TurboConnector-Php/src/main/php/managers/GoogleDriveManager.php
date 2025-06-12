@@ -297,6 +297,39 @@ class GoogleDriveManager {
 
 
     /**
+     * Obtain the real name of the file from the specified google drive id.
+     *
+     * @param string $id The google drive id for the file we want to inspect
+     *
+     * @return string The real name of the file that belongs to the specified id
+     */
+    public function getFileName($id){
+
+        // Check if the filename is already cached
+        if($this->_cacheManager !== null &&
+           ($cachedName = $this->_cacheManager->get(__FUNCTION__, $id)) !== null){
+
+            return $cachedName;
+        }
+
+        // Authentication is performed here to improve response time when data is cached
+        $this->authenticate();
+
+        try {
+
+            // Request the file metadata to google drive api
+            $file = $this->_service->files->get($id, array('fields' => 'name'));
+
+            return $file->getName();
+
+        } catch (Throwable $e) {
+
+            throw new UnexpectedValueException('Could not retrieve file name for id '.$id, 0, $e);
+        }
+    }
+
+
+    /**
      * This method will return the local filesystem path where we can find the specified google drive file.
      * Before giving us this path, the method will download all the file data locally, and once all the file is
      * stored in our machine, the path to it will be provided.
@@ -305,7 +338,8 @@ class GoogleDriveManager {
      *
      * @param string $id The google drive id for the file we want to retrieve
      *
-     * @return string The full file system path to the file we want to get
+     * @return string The full file system path to the file we want to get. Notice the path will contain the file id on google drive, not
+     *         the real file name, so we will have to use the getFileName method if we want the real file name.
      */
     public function getFileLocalPath($id){
 
