@@ -156,6 +156,23 @@ class MailMicrosoft365Manager extends MailManagerBase{
                 ]
             ];
 
+            if (!empty($this->_attachments)) {
+
+                $microsoftAttachments = [];
+
+                foreach ($this->_attachments as $attachment) {
+
+                    $microsoftAttachments[] = [
+                        '@odata.type' => '#microsoft.graph.fileAttachment',
+                        'name' => $attachment['fileName'],
+                        'contentType' => $attachment['mimeType'],
+                        'contentBytes' => $attachment['fileDataBase64']
+                    ];
+                }
+
+                $email['message']['attachments'] = $microsoftAttachments;
+            }
+
             // Send the email
             $graphEndpoint = "https://graph.microsoft.com/v1.0/users/$this->_senderAddress/sendMail";
 

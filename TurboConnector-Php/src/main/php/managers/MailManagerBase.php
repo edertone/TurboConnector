@@ -83,13 +83,13 @@ abstract class MailManagerBase extends BaseStrictClass {
 
 
     /**
-     * Stores the number of attached files to the current email
-     */
-    protected $_attachmentsLen = 0;
-
-
-    /**
      * Structure with the filenames and binary data of the files to attach to the mail
+     * the structure is an array of arrays with the following keys:
+     * - fileName : The name of the file when attached to the email
+     * - mimeType : The mime type of the file being attached
+     * - fileDataBase64 : The file data in base64 format
+     *
+     * @var array
      */
     protected $_attachments = [];
 
@@ -165,17 +165,33 @@ abstract class MailManagerBase extends BaseStrictClass {
      *
      * @param string $filename The name for the file when sent on the email
      * @param string $binary_data The file binary data to attach
+     * @param string $mimeType The mime type of the file being attached
      *
      * @return void
      */
-    public function attachFile($filename, $fileData){
+    public function attachFile($filename, $fileData, $mimeType = 'application/octet-stream'){
+
+        $this->attachFileBase64($filename, base64_encode($fileData), $mimeType);
+    }
+
+
+    /**
+     * Attach a file from base64 data to the email
+     *
+     * @param string $fileName The name for the file when sent on the email
+     * @param string $fileDataBase64 The file data in base64 format to attach
+     * @param string $mimeType The mime type of the file being attached
+     *
+     * @return void
+     */
+    public function attachFileBase64($filename, $fileDataBase64, $mimeType = 'application/octet-stream'){
 
         $f = [];
-        $f['filename'] = $filename;
-        $f['binary'] = chunk_split(base64_encode($fileData));
+        $f['fileName'] = $filename;
+        $f['mimeType'] = $mimeType;
+        $f['fileDataBase64'] = chunk_split($fileDataBase64);
 
         $this->_attachments[] = $f;
-        $this->_attachmentsLen ++;
     }
 
 
