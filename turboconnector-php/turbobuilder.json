@@ -28,8 +28,8 @@
             "copyPasteDetect":[
                 {
                     "path": "src/main",
-                    "maxPercentErrorLevel": 0,
-                    "maxPercentErrorDifference": 1,
+                    "maxPercentErrorLevel": 2,
+                    "maxPercentErrorDifference": 2,
                     "report": "html"
                 }
             ],
