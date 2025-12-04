@@ -17,9 +17,12 @@ use UnexpectedValueException;
 
 
 /**
- * BusinessCentralApiManager class
+ * Abstract Base Manager for Business Central connectivity.
+ * Handles Authentication (OAuth2), Token Caching, and low-level cURL transport.
+ *
+ * Cannot be instantiated directly. Must be extended.
  */
-class BusinessCentralApiManager {
+abstract class BusinessCentralApiManager {
 
     /** @var string */
     private $_clientId = '';
