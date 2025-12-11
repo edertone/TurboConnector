@@ -211,22 +211,19 @@ abstract class BusinessCentralApiManager {
      */
     public function requestGet(string $uri, array $queryParams = []){
 
-        // Validation: Base URL
+        // Validation
         if (empty($this->_baseUrl)) {
             throw new UnexpectedValueException("Base URL is not set. Call setBaseUrl() first.");
         }
 
-        // Validation: Check if URI needs Company ID but it's not set
         if (strpos($uri, '{companyId}') !== false && empty($this->_companyID)) {
-            throw new UnexpectedValueException("The URI contains '{companyId}' but no Company ID has been set via setCompanyID().");
+            throw new UnexpectedValueException("URI requires {companyId} but it is not set.");
         }
 
         $accessToken = $this->_obtainToken();
 
-        // Auto-replace the {companyId} placeholder if the ID is set
+        // Prepare URL
         $uri = str_replace('{companyId}', $this->_companyID, $uri);
-
-        // Construct the Full URL: ensure no double slashes when joining base URL and URI
         $url = rtrim($this->_baseUrl, '/') . '/' . ltrim($uri, '/');
 
         // Add Query Parameters
@@ -251,6 +248,70 @@ abstract class BusinessCentralApiManager {
         // Handle Errors
         if ($httpCode < 200 || $httpCode >= 300) {
             throw new UnexpectedValueException("Error on GET request to '{$uri}': [{$httpCode}] " . $response . ($curlError ? " Curl Error: $curlError" : ""));
+        }
+
+        return json_decode($response, true);
+    }
+
+
+    /**
+     * Perform a generic POST request to the Business Central API.
+     * Used for creating new records.
+     *
+     * Example Usage:
+     *
+     *    $this->requestPost('api/v2.0/companies({companyId})/customers', [
+     *            'displayName' => $name,
+     *            'email'       => $email
+     *        ]);
+     *    }
+     *
+     * @param string $uri      The API endpoint URI (supports {companyId} placeholder).
+     * @param array  $bodyData The data array to be sent (will be JSON encoded).
+     *
+     * @return array|null The API response (usually contains the created object with its new ID).
+     * @throws UnexpectedValueException If the request fails (HTTP 4xx/5xx) or configuration is missing.
+     */
+    protected function requestPost(string $uri, array $bodyData = []){
+
+        // Validation
+        if (empty($this->_baseUrl)) {
+            throw new UnexpectedValueException("Base URL is not configured.");
+        }
+
+        if (strpos($uri, '{companyId}') !== false && empty($this->_companyID)) {
+            throw new UnexpectedValueException("URI requires {companyId} but it is not set.");
+        }
+
+        $accessToken = $this->_obtainToken();
+
+        // Prepare URL
+        $uri = str_replace('{companyId}', $this->_companyID, $uri);
+        $url = rtrim($this->_baseUrl, '/') . '/' . ltrim($uri, '/');
+
+        // Setup cURL for POST
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($bodyData));
+
+        // Headers (Content-Type is mandatory for POST)
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Bearer {$accessToken}",
+            "Accept: application/json",
+            "Content-Type: application/json"
+                ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+
+        // Handle Errors
+        // BC returns 201 for Created, 200 for OK. Errors are 4xx or 5xx.
+        if ($httpCode >= 400) {
+            throw new UnexpectedValueException("API POST Error [{$httpCode}] on '{$uri}': {$response} {$curlError}");
         }
 
         return json_decode($response, true);
