@@ -109,8 +109,8 @@ abstract class BusinessCentralApiManager {
      */
     private function _obtainToken(){
 
-        // Check if we have a valid cached token (with 5-minute safety buffer)
-        if ($this->_accessToken && time() < ($this->_tokenExpiry - 300)) {
+        // Check if we have a valid cached token (with 10-minute safety buffer)
+        if ($this->_accessToken && time() < ($this->_tokenExpiry - 600)) {
             return $this->_accessToken;
         }
 
@@ -209,7 +209,7 @@ abstract class BusinessCentralApiManager {
      * @return array|null The API response data, or null on failure.
      * @throws UnexpectedValueException
      */
-    public function requestGet(string $uri, array $queryParams = []){
+    protected function requestGet(string $uri, array $queryParams = []){
 
         // Validation
         if (empty($this->_baseUrl)) {
@@ -272,11 +272,11 @@ abstract class BusinessCentralApiManager {
      * @return array|null The API response (usually contains the created object with its new ID).
      * @throws UnexpectedValueException If the request fails (HTTP 4xx/5xx) or configuration is missing.
      */
-    protected function requestPost(string $uri, array $bodyData = []){
+    protected function requestPost(string $uri, array $bodyData = [], $language = ''){
 
         // Validation
         if (empty($this->_baseUrl)) {
-            throw new UnexpectedValueException("Base URL is not configured.");
+            throw new UnexpectedValueException("Base URL is not set. Call setBaseUrl() first.");
         }
 
         if (strpos($uri, '{companyId}') !== false && empty($this->_companyID)) {
@@ -297,11 +297,18 @@ abstract class BusinessCentralApiManager {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($bodyData));
 
         // Headers (Content-Type is mandatory for POST)
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        $headers = [
             "Authorization: Bearer {$accessToken}",
             "Accept: application/json",
             "Content-Type: application/json"
-                ]);
+        ];
+
+        if($language !== ''){
+
+            $headers[] = "Accept-Language: {$language}";
+        }
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
