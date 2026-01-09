@@ -176,29 +176,34 @@ class TurboDockerFileToolsManager {
     /**
      * Stores raw data (string or binary) in the cache.
      *
-     * @param string $key The unique key to identify the cached item.
+     * @param string $namespace The namespace for the cache item.
+     * @param string $key The unique key to identify the cached item within the namespace.
      * @param string $valueRaw The raw content (e.g., string or PDF binary string) to store.
-     * @param int|null $expire Expiration time in seconds (optional).
+     * @param int|null $expire Expiration time in seconds (optional). If set to null, the item will not expire.
      *
-     * @return array An array containing the response body and the HTTP status code.
+     * @return array An array containing the response body at index 0 and the HTTP status code at index 1.
      */
-    public function cacheSet($key, $valueRaw, $expire = null) {
-        return $this->processWithTempFile($valueRaw, function($tempPath) use ($key, $expire) {
-            return $this->cacheSetFromFilePath($key, $tempPath, $expire);
+    public function cacheSet($namespace, $key, $valueRaw, $expire = null) {
+        return $this->processWithTempFile($valueRaw, function($tempPath) use ($namespace, $key, $expire) {
+            return $this->cacheSetFromFilePath($namespace, $key, $tempPath, $expire);
         });
     }
 
     /**
      * Stores a file in the cache using a local file path.
      *
-     * @param string $key The unique key to identify the cached item.
+     * @param string $namespace The namespace for the cache item.
+     * @param string $key The unique key to identify the cached item within the namespace.
      * @param string $valuePath The local file path of the content to store in the cache.
-     * @param int|null $expire Expiration time in seconds (optional).
+     * @param int|null $expire Expiration time in seconds (optional). If set to null, the item will not expire.
      *
-     * @return array An array containing the response body and the HTTP status code.
+     * @return array An array containing the response body at index 0 and the HTTP status code at index 1.
      */
-    public function cacheSetFromFilePath($key, $valuePath, $expire = null) {
-        $fields = ['key' => $key];
+    public function cacheSetFromFilePath($namespace, $key, $valuePath, $expire = null) {
+        $fields = [
+            'namespace' => $namespace,
+            'key' => $key
+        ];
         if ($expire) {
             $fields['expire'] = $expire;
         }
@@ -206,29 +211,37 @@ class TurboDockerFileToolsManager {
     }
 
     /**
-     * Retrieves a value from the cache by its key.
+     * Retrieves a value from the cache by its namespace and key.
      *
+     * @param string $namespace The namespace of the item.
      * @param string $key The unique key of the item to retrieve.
      *
-     * @return array An array containing the response body (cached content) and the HTTP status code.
+     * @return array An array containing the cached content at index 0 and the HTTP status code at index 1 (200 means item found ok).
      */
-    public function cacheGet($key) {
-        $fields = ['key' => $key];
+    public function cacheGet($namespace, $key) {
+        $fields = [
+            'namespace' => $namespace,
+            'key' => $key
+        ];
         return $this->post('/cache-get', $fields);
     }
 
     /**
-     * Retrieves a value from the cache by its key and streams the output directly.
+     * Retrieves a value from the cache by its namespace and key and streams the output directly.
      *
+     * @param string $namespace The namespace of the item.
      * @param string $key The unique key of the item to retrieve.
      *
-     * @return int The HTTP status code of the response.
+     * @return int The HTTP status code of the response (200 means item found ok).
      */
-    public function cacheGetStreamOutput($key) {
+    public function cacheGetStreamOutput($namespace, $key) {
         $url = $this->baseUrl . '/cache-get';
         $curl = curl_init();
 
-        $fields = ['key' => $key];
+        $fields = [
+            'namespace' => $namespace,
+            'key' => $key
+        ];
 
         // Flag to determine if we should output the body
         $isError = false;
@@ -255,7 +268,7 @@ class TurboDockerFileToolsManager {
                 }
                 return strlen($data);
             }
-        ]);
+            ]);
 
         curl_exec($curl);
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -267,17 +280,33 @@ class TurboDockerFileToolsManager {
     /**
      * Deletes a specific item from the cache.
      *
+     * @param string $namespace The namespace of the item.
      * @param string $key The unique key of the item to delete.
      *
      * @return array An array containing the response body and the HTTP status code.
      */
-    public function cacheDeleteKey($key) {
-        $fields = ['key' => $key];
+    public function cacheDeleteKey($namespace, $key) {
+        $fields = [
+            'namespace' => $namespace,
+            'key' => $key
+        ];
         return $this->post('/cache-delete-key', $fields);
     }
 
     /**
-     * Deletes all items from the cache.
+     * Deletes all items within a specific namespace.
+     *
+     * @param string $namespace The namespace to clear.
+     *
+     * @return array An array containing the response body and the HTTP status code.
+     */
+    public function cacheClearNamespace($namespace) {
+        $fields = ['namespace' => $namespace];
+        return $this->post('/cache-clear-namespace', $fields);
+    }
+
+    /**
+     * Deletes all items from the cache (all namespaces).
      *
      * @return array An array containing the response body and the HTTP status code.
      */
@@ -286,7 +315,7 @@ class TurboDockerFileToolsManager {
     }
 
     /**
-     * Removes only the expired items from the cache.
+     * Removes only the expired items from the cache (across all namespaces).
      *
      * @return array An array containing the response body and the HTTP status code.
      */
